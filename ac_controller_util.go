@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"time"
 )
 
 type ACControlSC struct {
@@ -11,8 +12,9 @@ type ACControlSC struct {
 }
 
 type ACData struct {
-	ID                  string  `json:"ID"` // ID of AC Unit
-	ACOutputTemperature float32 `json:"acOutputTemperature"`
+	ID                  string    `json:"ID"` // ID of AC Unit
+	ACOutputTemperature float32   `json:"acOutputTemperature"`
+	TimeStamp           time.Time `json:"timeStamp"`
 }
 
 // GetACTemperature retrieves current output temperature of an AC unit from the world state
