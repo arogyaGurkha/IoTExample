@@ -54,10 +54,10 @@ func (sc *SmartContract) CreateThermalData(ctx contractapi.TransactionContextInt
 	}
 
 	thermal := IoTThermalData{
-		ID: id,
+		ID:                    id,
 		AggregatedTemperature: aggregatedTemperature,
 	}
-	thermalJSON, err:= json.Marshal(thermal)
+	thermalJSON, err := json.Marshal(thermal)
 	if err != nil {
 		return err
 	}
@@ -66,13 +66,13 @@ func (sc *SmartContract) CreateThermalData(ctx contractapi.TransactionContextInt
 }
 
 // ReadThermalData returns the asset stored in the world state with given id
-func (sc *SmartContract) ReadThermalData (ctx contractapi.TransactionContextInterface, id string) (*IoTThermalData, error){
+func (sc *SmartContract) ReadThermalData(ctx contractapi.TransactionContextInterface, id string) (*IoTThermalData, error) {
 	thermalJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from the world state: %v", err)
 	}
 	if thermalJSON == nil {
-		return nil, fmt.Errorf("The asset %s does not exist", id)
+		return nil, fmt.Errorf("Thermal data %s does not exist", id)
 	}
 
 	var thermal IoTThermalData
@@ -84,10 +84,49 @@ func (sc *SmartContract) ReadThermalData (ctx contractapi.TransactionContextInte
 	return &thermal, nil
 }
 
+// UpdateThermalData updates an existing thermal data in the world state with provided parameters
+func (sc *SmartContract) UpdateThermalData(ctx contractapi.TransactionContextInterface,
+	id string, aggregatedTemperature float32) error {
+
+	exists, err := sc.ThermalDataExists(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("Thermal data %s does not exist", id)
+	}
+
+	// overwriting thermal data
+	thermal := IoTThermalData{
+		ID:                    id,
+		AggregatedTemperature: aggregatedTemperature,
+	}
+	thermalJSON, err := json.Marshal(thermal)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState(id, thermalJSON)
+}
+
+// DeleteThermalData deletes a given thermal data from the world state
+func (sc *SmartContract) DeleteThermalData(ctx contractapi.TransactionContextInterface, id string) error {
+	exists, err := sc.ThermalDataExists(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if !exists{
+		return fmt.Errorf("Thermal data %s does not exist", id)
+	}
+
+	return ctx.GetStub().DelState(id)
+}
+
 // ThermalDataExists returns true when assets with given ID exists in the world state
-func (sc *SmartContract) ThermalDataExists (ctx contractapi.TransactionContextInterface, id string) (bool, error){
+func (sc *SmartContract) ThermalDataExists(ctx contractapi.TransactionContextInterface, id string) (bool, error) {
 	thermalJSON, err := ctx.GetStub().GetState(id)
-	if err != nil{
+	if err != nil {
 		return false, fmt.Errorf("Failed to read the world state: %v", err)
 	}
 
